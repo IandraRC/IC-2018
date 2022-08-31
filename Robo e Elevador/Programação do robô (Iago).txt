@@ -1,0 +1,64 @@
+#include <Wire.h>
+#include <ZumoShield.h>
+
+#define NUM_SENSORS   6     // number of sensors used
+#define TIMEOUT       2500  // waits for 2500 microseconds for sensor outputs to go low
+#define EMITTER_PIN   2     // emitter is controlled by digital pin 2
+
+ZumoMotors motor;
+
+// sensors 0 through 7 are connected to digital pins 3 through 10, respectively
+  QTRSensorsRC sensor((unsigned char[]) {5, A2, A0, 11, A3, 4},
+  NUM_SENSORS, TIMEOUT, EMITTER_PIN);
+  
+unsigned int sensorleitura[NUM_SENSORS];
+int i=0;
+int erro;
+
+
+
+void setup()
+{
+  
+  delay(500);
+  pinMode(13, OUTPUT);
+  digitalWrite(13, HIGH);    // turn on Arduino's LED to indicate we are in calibration mode
+
+  delay(1000);
+  int i;
+  
+  for(i = 0; i < 80; i++)
+  {
+    if ((i > 10 && i <= 30) || (i > 50 && i <= 70))
+      motor.setSpeeds(150, 150);
+    else
+      motor.setSpeeds(-150, -150);
+    sensor.calibrate();
+
+    // Since our counter runs to 80, the total delay will be
+    // 80*20 = 1600 ms.
+    delay(20);
+  }
+  motor.setSpeeds(0,0);
+  
+  
+  Serial.begin(9600);
+  delay(1000);
+}
+
+
+
+void loop(){
+
+unsigned int sensores= sensor.readLine(sensorleitura);
+  if (sensores>=2400 && sensores<=2600){
+    motor.setSpeeds(-150,150);
+  }
+if(sensores>=2650){
+      motor.setSpeeds(90,130);
+  }
+    if(sensores<=2350){
+      motor.setSpeeds(-130,-90);
+   }
+}
+
